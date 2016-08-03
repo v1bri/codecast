@@ -27,3 +27,9 @@
 *.exe
 *.out
 *.app
+
+# Compiled Java classes
+*.class
+
+# Java archives
+*.jar
