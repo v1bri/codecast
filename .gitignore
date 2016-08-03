@@ -33,3 +33,6 @@
 
 # Java archives
 *.jar
+
+# Emacs source file backups
+*~
