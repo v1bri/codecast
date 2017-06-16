@@ -8,6 +8,49 @@ effectively no way to terminate a long running or blocked Java method call! Just
 try to `Ctrl-C` out of a Java method from Matlab and see for yourself.
 
 **Demo**
+```
+$ matlab -nodesktop -nodisplay -nosplash
+
+                                           < M A T L A B (R) >
+                                 Copyright 1984-2017 The MathWorks, Inc.
+                                  R2017a (9.2.0.538062) 64-bit (glnxa64)
+                                            February 23, 2017
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+>> % We'll start with a long computation. This could be a matrix multiply, a
+>> % graphics plot, reading a socket or any other long running operation in native
+>> % Matlab code.
+>> long_computation = @() pause(2);
+>> long_computation();
+>> 
+>> % That works. Let's refactor and increase our test coverage.
+>> long_computation = @(n) pause(n);
+>> long_computation(4);
+>> 
+>> % Now to run it on some big data.
+>> long_computation(intmax('int32'));
+Operation terminated by user during @(n)pause(n)
+ 
+>> % When things take longer than usual, a user quickly learns to reach for
+>> % `Ctrl-C` first. As you can see, it works as expected from native Matlab code.
+>> clc
+
+>> % Once the library is ready, we can port to Java.
+>> long_java_computation = @(n) java.lang.Thread.sleep(n * 1000);
+>> long_java_computation(2);
+>> long_java_computation(4);
+>> 
+>> % The moment of truth...
+>> long_java_computation(intmax('int32'));
+
+[3]+  Stopped                 matlab -nodesktop -nodisplay -nosplash
+$ # No luck. Go directly to `killall -9 MATLAB`.
+$ killall -9 MATLAB
+[3]+  Killed                  matlab -nodesktop -nodisplay -nosplash
+```
 
 Not the best user experience. The `Ctrl-C` gets placed on Matlab's event queue,
 which is handled by the thread that is currently blocked forever inside the Java
@@ -33,6 +76,62 @@ better because it defers pending graphics operations after achieving a target
 frame rate.
 
 **Demo**
+```
+$ emacs -nw CodeCast001.java
+$
+$ # We'll build and jar it for Matlab's JVM.
+$ javac -source 1.7 -target 1.7 CodeCast001.java
+warning: [options] bootstrap class path not set in conjunction with -source 1.7
+1 warning
+$ jar -cf codecast001.jar CodeCast001.class
+$ matlab -nodesktop -nodisplay -nosplash
+
+                                           < M A T L A B (R) >
+                                 Copyright 1984-2017 The MathWorks, Inc.
+                                  R2017a (9.2.0.538062) 64-bit (glnxa64)
+                                            February 23, 2017
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+>> javaaddpath('codecast001.jar');
+>> 
+>> % Let's quickly test for regressions.
+>> CodeCast001.longComputation(2);
+>> CodeCast001.longComputation(4);
+>> CodeCast001.longComputation(intmax('int32'));
+
+[3]+  Stopped                 matlab -nodesktop -nodisplay -nosplash
+$ killall -9 MATLAB
+[3]+  Killed                  matlab -nodesktop -nodisplay -nosplash
+$ emacs -nw CodeCast001.java
+$
+$ # One more build.
+$ javac -source 1.7 -target 1.7 CodeCast001.java
+warning: [options] bootstrap class path not set in conjunction with -source 1.7
+1 warning
+$ jar -cf codecast001.jar CodeCast001.class
+$ matlab -nodesktop -nodisplay -nosplash
+
+                                           < M A T L A B (R) >
+                                 Copyright 1984-2017 The MathWorks, Inc.
+                                  R2017a (9.2.0.538062) 64-bit (glnxa64)
+                                            February 23, 2017
+
+ 
+To get started, type one of these: helpwin, helpdesk, or demo.
+For product information, visit www.mathworks.com.
+ 
+>> javaaddpath('codecast001.jar');
+>> 
+>> % Cross your fingers!
+>> CodeCast001.longInterruptibleComputation(intmax('int32'));
+Running in Matlab
+Matlab Ctrl-C
+>> % Sweet it works!!!!
+>> exit
+```
 
 So that's it for now. Full source code for this codecast is available on
 [my GitHub repo](https://github.com/v1bri/codecast).
