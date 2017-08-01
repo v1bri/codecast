@@ -1,0 +1,6 @@
+{ "host": "example.local", "service": "http" }
+{ "host": "google.com", "service": "https" }
+{ "host": "facebook.com", "service": "https" }
+{ "host": "newyorktimes.com", "service": "https" }
+{ "host": "ndjson.org", "service": "http" }
+{ "host": "stackoverflow.com" }
