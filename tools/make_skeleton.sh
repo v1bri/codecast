@@ -26,7 +26,7 @@ TARGET_NAME=$3
 
 # Create cmake module folder and download the HunterGate module.
 mkdir -p "$DEST_PATH/cmake" || exit 1
-$CURL -s -L -o "$DEST_PATH/cmake/HunterGate.cmake" https://github.com/hunter-packages/gate/raw/master/cmake/HunterGate.cmake
+$CURL -s -L -o "$DEST_PATH/cmake/HunterGate.cmake" https://raw.githubusercontent.com/hunter-packages/gate/master/cmake/HunterGate.cmake
 
 # Create the skeleton CMakeLists.txt file.
 echo "# CMake version 3.0 or higher is required for the Hunter package manager." > $DEST_PATH/CMakeLists.txt
